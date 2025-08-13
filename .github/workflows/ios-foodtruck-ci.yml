@@ -14,33 +14,22 @@ jobs:
       - name: Set up Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '15.0'  # Or use '15.0.1' — whichever matches your local version
+          xcode-version: '15.0.1'
 
-      - name: Build and Archive
+      - name: Build (No Code Signing)
         run: |
           xcodebuild \
             -project "Food Truck.xcodeproj" \
             -scheme "Food Truck" \
             -configuration Release \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
             -archivePath build/FoodTruck.xcarchive \
             archive
-
-      - name: Export IPA
-        run: |
-          xcodebuild \
-            -exportArchive \
-            -archivePath build/FoodTruck.xcarchive \
-            -exportOptionsPlist ExportOptions.plist \
-            -exportPath build
 
       - name: Upload XCArchive artifact
         uses: actions/upload-artifact@v4
         with:
           name: FoodTruck-XCArchive
           path: build/FoodTruck.xcarchive
-
-      - name: Upload IPA artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: FoodTruck-IPA
-          path: build/FoodTruck.ipa
