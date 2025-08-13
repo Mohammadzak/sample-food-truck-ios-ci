@@ -1,4 +1,5 @@
-FROM swift:5.9  # Use a Swift version compatible with your code
+# Use a Swift version compatible with your code
+FROM swift:5.9
 
 # Install dependencies and SwiftLint via Homebrew
 RUN apt-get update && apt-get install -y git curl unzip && \
