@@ -10,6 +10,6 @@ on:
 
 jobs:
   run-reusable:
-    uses: ./.github/workflows/multi-stage.yml
+    uses: ./.github/workflows/reusable.yml
     with:
       target-environment: ${{ github.event.inputs.TARGET_ENVIRONMENT }}
