@@ -1,0 +1,76 @@
+name: Food Truck Multi-Stage Build with Env Selection
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Select build environment"
+        required: true
+        default: "Dev"
+        type: choice
+        options:
+          - Dev
+          - QA
+          - Prod
+
+jobs:
+  build:
+    name: Build Food Truck (${{ github.event.inputs.environment }})
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '15.0.1'
+
+      - name: Print Selected Environment
+        run: echo "Selected environment: ${{ github.event.inputs.environment }}"
+
+      - name: Build (No Code Signing)
+        run: |
+          xcodebuild \
+            -project "Food Truck.xcodeproj" \
+            -scheme "Food Truck" \
+            -configuration Release \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            -archivePath build/FoodTruck-${{ github.event.inputs.environment }}.xcarchive \
+            archive
+
+      - name: Upload XCArchive artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: FoodTruck-${{ github.event.inputs.environment }}-XCArchive
+          path: build/FoodTruck-${{ github.event.inputs.environment }}.xcarchive
+
+  export:
+    name: Export for Simulator (${{ github.event.inputs.environment }})
+    runs-on: macos-latest
+    needs: build
+
+    steps:
+      - name: Download XCArchive artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: FoodTruck-${{ github.event.inputs.environment }}-XCArchive
+          path: build/FoodTruck-${{ github.event.inputs.environment }}.xcarchive
+
+      - name: Export .app for Simulator
+        run: |
+          echo "Exporting .app for environment: ${{ github.event.inputs.environment }}"
+          xcodebuild \
+            -exportArchive \
+            -archivePath build/FoodTruck-${{ github.event.inputs.environment }}.xcarchive \
+            -exportPath build/SimulatorApp \
+            -destination 'generic/platform=iOS Simulator' \
+            -exportOptionsPlist exportOptions.plist || echo "Skipping export for unsigned build"
+
+      - name: Upload Simulator App
+        uses: actions/upload-artifact@v4
+        with:
+          name: FoodTruck-${{ github.eve
