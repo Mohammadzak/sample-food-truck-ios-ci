@@ -1,7 +1,6 @@
 name: Food Truck Multi-Stage Build & Deploy
 
 on:
-  workflow_call:
   workflow_dispatch:
 
 jobs:
