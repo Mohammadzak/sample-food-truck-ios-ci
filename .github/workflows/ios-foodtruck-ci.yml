@@ -16,7 +16,7 @@ jobs:
         with:
           xcode-version: '15.0.1'
 
-      - name: Build (No Code Signing)
+      - name: Build
         run: |
           xcodebuild \
             -project "Food Truck.xcodeproj" \
