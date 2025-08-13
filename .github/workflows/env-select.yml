@@ -4,14 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: "Select build environment"
+        description: "Select build environment (dev, test, prod)"
         required: true
-        default: "Dev"
-        type: choice
-        options:
-          - Dev
-          - QA
-          - Prod
+        default: "dev"
 
 jobs:
   build:
@@ -73,4 +68,5 @@ jobs:
       - name: Upload Simulator App
         uses: actions/upload-artifact@v4
         with:
-          name: FoodTruck-${{ github.eve
+          name: FoodTruck-${{ github.event.inputs.environment }}-Simulator-App
+          path: build/SimulatorApp
