@@ -1,0 +1,94 @@
+name: Food Truck Multi-Stage Build & Deploy (Reusable)
+
+on:
+  workflow_call:
+    inputs:
+      scheme:
+        description: "Xcode scheme to build"
+        required: true
+        type: string
+      xcode-version:
+        description: "Xcode version to use"
+        required: false
+        default: "15.0.1"
+        type: string
+    outputs:
+      archive-path:
+        description: "Path to the generated XCArchive"
+        value: ${{ jobs.build.outputs.archive-path }}
+
+jobs:
+  build:
+    name: Build Food Truck
+    runs-on: macos-latest
+    outputs:
+      archive-path: ${{ steps.archive.outputs.path }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: ${{ inputs.xcode-version }}
+
+      - name: Build (No Code Signing)
+        id: archive
+        run: |
+          ARCHIVE_PATH=build/FoodTruck.xcarchive
+          xcodebuild \
+            -project "Food Truck.xcodeproj" \
+            -scheme "${{ inputs.scheme }}" \
+            -configuration Release \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            -archivePath "$ARCHIVE_PATH" \
+            archive
+          echo "path=$ARCHIVE_PATH" >> $GITHUB_OUTPUT
+
+      - name: Upload XCArchive artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: FoodTruck-XCArchive
+          path: ${{ steps.archive.outputs.path }}
+
+  deploy_dev:
+    name: Deploy to Dev
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: FoodTruck-XCArchive
+          path: ./deploy
+      - run: echo "Deploying to Dev..."
+        # Add Dev deployment commands here
+
+  deploy_test:
+    name: Deploy to Test
+    needs: deploy_dev
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: FoodTruck-XCArchive
+          path: ./deploy
+      - run: echo "Deploying to Test..."
+        # Add Test deployment commands here
+
+  deploy_prod:
+    name: Deploy to Prod
+    needs: deploy_test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: FoodTruck-XCArchive
+          path: ./deploy
+      - run: echo "Deploying to Prod..."
+        # Add Prod deployment commands here
