@@ -10,7 +10,7 @@ on:
 
 jobs:
   run-build-and-deploy:
-    uses: ./.github/workflows/foodtruck-reusable.yml
+    uses: ./.github/workflows/multistagereusable.yml
     with:
       scheme: "Food Truck"
       xcode-version: "15.0.1"
