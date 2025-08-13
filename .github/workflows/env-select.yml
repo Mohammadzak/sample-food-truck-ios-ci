@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: "Select build environment (dev, test, prod)"
+        description: "Select build environment (dev,test, prod)"
         required: true
         default: "dev"
 
@@ -23,7 +23,8 @@ jobs:
           xcode-version: '15.0.1'
 
       - name: Print Selected Environment
-        run: echo "Selected environment: ${{ github.event.inputs.environment }}"
+        run: |
+          echo "Selected environment: ${{ github.event.inputs.environment }}"
 
       - name: Build (No Code Signing)
         run: |
@@ -42,31 +43,3 @@ jobs:
         with:
           name: FoodTruck-${{ github.event.inputs.environment }}-XCArchive
           path: build/FoodTruck-${{ github.event.inputs.environment }}.xcarchive
-
-  export:
-    name: Export for Simulator (${{ github.event.inputs.environment }})
-    runs-on: macos-latest
-    needs: build
-
-    steps:
-      - name: Download XCArchive artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: FoodTruck-${{ github.event.inputs.environment }}-XCArchive
-          path: build/FoodTruck-${{ github.event.inputs.environment }}.xcarchive
-
-      - name: Export .app for Simulator
-        run: |
-          echo "Exporting .app for environment: ${{ github.event.inputs.environment }}"
-          xcodebuild \
-            -exportArchive \
-            -archivePath build/FoodTruck-${{ github.event.inputs.environment }}.xcarchive \
-            -exportPath build/SimulatorApp \
-            -destination 'generic/platform=iOS Simulator' \
-            -exportOptionsPlist exportOptions.plist || echo "Skipping export for unsigned build"
-
-      - name: Upload Simulator App
-        uses: actions/upload-artifact@v4
-        with:
-          name: FoodTruck-${{ github.event.inputs.environment }}-Simulator-App
-          path: build/SimulatorApp
