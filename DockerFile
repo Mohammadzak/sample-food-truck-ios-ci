@@ -1,0 +1,17 @@
+# Use official Swift image
+FROM swift:5.10
+
+# Set working directory
+WORKDIR /app
+
+# Install any extra tools (like swiftlint)
+RUN apt-get update && apt-get install -y git curl && \
+    curl -sL https://github.com/realm/SwiftLint/releases/download/0.57.0/swiftlint_linux.zip -o swiftlint.zip && \
+    apt-get install -y unzip && unzip swiftlint.zip -d /usr/local/bin && rm swiftlint.zip && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Copy project files
+COPY . .
+
+# Run lint by default
+CMD ["swiftlint"]
