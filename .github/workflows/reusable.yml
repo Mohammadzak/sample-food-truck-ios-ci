@@ -9,7 +9,8 @@ on:
         default: test
 
 jobs:
-  run-reusable:
-    uses: ./.github/workflows/reusable.yml
+  run-build-and-deploy:
+    uses: ./.github/workflows/foodtruck-reusable.yml
     with:
-      target-environment: ${{ github.event.inputs.TARGET_ENVIRONMENT }}
+      scheme: "Food Truck"
+      xcode-version: "15.0.1"
