@@ -1,18 +1,18 @@
-# Use a Swift image compatible with your code
 FROM swift:5.9
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
     git \
     curl \
+    tar \
     unzip \
     && rm -rf /var/lib/apt/lists/*
 
-# Install SwiftLint from prebuilt binary
-RUN curl -L https://github.com/realm/SwiftLint/releases/download/0.57.0/portable_swiftlint.zip -o swiftlint.zip \
-    && unzip swiftlint.zip -d /usr/local/bin \
+# Install SwiftLint for Linux
+RUN curl -L https://github.com/realm/SwiftLint/releases/download/0.57.0/swiftlint_linux.tar.gz -o swiftlint.tar.gz \
+    && tar -xzf swiftlint.tar.gz \
+    && mv swiftlint /usr/local/bin/ \
     && chmod +x /usr/local/bin/swiftlint \
-    && rm swiftlint.zip
+    && rm swiftlint.tar.gz
 
-# Default command
 CMD ["swiftlint", "--version"]
