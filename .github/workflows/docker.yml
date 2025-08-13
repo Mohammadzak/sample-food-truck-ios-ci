@@ -1,0 +1,42 @@
+name: Food Truck Lint & Build With Docker
+
+on:
+  workflow_dispatch:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Docker image
+        run: docker build -t foodtruck-lint .
+      - name: Run SwiftLint inside Docker
+        run: docker run --rm foodtruck-lint
+
+  build:
+    runs-on: macos-latest
+    needs: lint
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '15.0.1'
+      - name: Build (No Code Signing)
+        run: |
+          ARCHIVE_PATH=build/FoodTruck.xcarchive
+          xcodebuild \
+            -project "Food Truck.xcodeproj" \
+            -scheme "Food Truck" \
+            -configuration Release \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            -archivePath "$ARCHIVE_PATH" \
+            archive
+      - name: Upload XCArchive artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: FoodTruck-XCArchive
+          path: build/FoodTruck.xcarchive
