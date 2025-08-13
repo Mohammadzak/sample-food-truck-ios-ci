@@ -1,15 +1,14 @@
-# Use the official Swift image
-FROM swift:5.9
+FROM swift:5.9  # Use a Swift version compatible with your code
 
-# Install SwiftLint
-RUN apt-get update && apt-get install -y git curl && \
-    git clone https://github.com/realm/SwiftLint.git && \
-    cd SwiftLint && swift build -c release && \
-    mv .build/release/swiftlint /usr/local/bin/ && \
-    cd .. && rm -rf SwiftLint
+# Install dependencies and SwiftLint via Homebrew
+RUN apt-get update && apt-get install -y git curl unzip && \
+    curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | bash && \
+    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)" && \
+    brew install swiftlint && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Set the working directory
-WORKDIR /app
+# Set Homebrew path
+ENV PATH="/home/linuxbrew/.linuxbrew/bin:${PATH}"
 
 # Default command
-CMD ["swiftlint"]
+CMD ["swiftlint", "--version"]
